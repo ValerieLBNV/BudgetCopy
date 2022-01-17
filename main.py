@@ -27,33 +27,32 @@ def get_version_cell(sheet):
                 return cell
     raise ValueError('There is no specified cell')
 
-def idk():
-
-def find_starting_cell(output_version_cell, output_worksheet, output_version_column, version, overwrite):
+def find_starting_cell(output_version_cell, output_worksheet, output_version_column, version):
     chosen_cell = ''
-    overwrite = ""
+
     for number in range(output_version_cell.row + 1,
                         output_worksheet.max_row + 1):  # row+1: excl.header, max+1 incl last max row
         chosen_cell = output_worksheet.cell(number, output_version_column)
         # case 1 where we found a cell with the same version
 
         if chosen_cell.value == int(version):
+            overwrite = ""
             while overwrite.lower() != "yes" and overwrite.lower() != "no":
-                overwrite = input("version" + version + "in" + output_worksheet + "already exists. Overwrite? Yes/no:")
-            # TODO: here, you have found a cell that matches your version. That means that overwriting will happen.
+                input("Version " + version + " in " + str(output_worksheet) + " already exists. Overwrite? Yes/no: ")
+            # here, you have found a cell that matches your version. That means that overwriting will happen.
             #  We will need to add another value to return. Just write return x, y
             #  REMEMBER - you will also need to save both of the values too (where you are calling the method from).
             #  You can save them by saying x, y = method()
             #  You can easily find where the method is called from by clicking wheel on your mouse and hovering over the name of the methdod
 
-            # TODO: Now to put that variable to good use:
+            # Now to put that variable to good use:
             #  Print out a question where you ask if you want to overwrite. Whatever the answer, return the value (together with the value that is being returned currently, do as described above)
             #  It might be useful to check if the user input makes sense (if its either yes or no). Use while loop as we did before
 
             return chosen_cell, overwrite
     # case 2 where we did not find a cell with the same version, and we return the last cell in the column
     overwrite ="yes"
-    return output_worksheet.cell(chosen_cell.row + 1, chosen_cell.column)
+    return output_worksheet.cell(chosen_cell.row + 1, chosen_cell.column), overwrite
 
 
 def copy_data(version, chosen_files):
@@ -83,30 +82,32 @@ def copy_data(version, chosen_files):
         output_version_column = output_version_cell.column
 
         # find location to paste to
-        chosen_cell = find_starting_cell(output_version_cell, output_worksheet, output_version_column, version)
-        # TODO: when you have returned both values, you need to make a check here. (if you are not yet returning two values, see TODO inside of the method find_starting_cell)
+        chosen_cell, overwrite = find_starting_cell(output_version_cell, output_worksheet, output_version_column, version)
+        # when you have returned both values, you need to make a check here. (if you are not yet returning two values, see to-do inside of the method find_starting_cell)
         # TODO: inside of the check (if statement), check if the returned input is no (no overwriting). If it is that, then you should close the file (you need to close it, otherwise it will lag ur pc)
         #   and execute (write to the code) - continue
         #   Continue will make the code skip the entire loop - which means that the entire file will be ignored and we will move to another one.
         #   No need to check for anything else, just let the code run.
+
+        if overwrite.lower() == "no":
+            output_workbook.save(OUTPUT_PATH)
+            continue
+        elif overwrite.lower() == "yes":
         # Paste cell range
-        row_counter = 0
-        for row in cell_range:
-            cell_counter = 0
-            for cell in row:
-                if cell_counter == 0:  # overwrite all value of version cells to indicated version
-                    output_worksheet.cell(chosen_cell.row + row_counter, chosen_cell.column).value = int(version)
-                else:  # paste the rest of cell range
-                    output_worksheet.cell(chosen_cell.row + row_counter,
-                                          chosen_cell.column + cell_counter).value = cell.value
-                cell_counter += 1
-            row_counter += 1
-
-        #  output_worksheet.cell(chosen_cell.row + row_counter, chosen_cell.column) <- specify coordinate of each cell
-
-        # TODO: delete previous data of measure YTG (or find how in DAX)
+            row_counter = 0
+            for row in cell_range:
+                cell_counter = 0
+                for cell in row:
+                    if cell_counter == 0:  # overwrite all value of version cells to indicated version
+                        output_worksheet.cell(chosen_cell.row + row_counter, chosen_cell.column).value = int(version)
+                    else:  # paste the rest of cell range
+                        output_worksheet.cell(chosen_cell.row + row_counter,
+                                              chosen_cell.column + cell_counter).value = cell.value
+                    cell_counter += 1
+                row_counter += 1
         output_workbook.save(OUTPUT_PATH)
 
+# TODO: delete previous data of measure YTG (or find how in DAX)
 def archive_action(input_file_name, version, new_file_name):
     archive_file_path = shutil.copyfile(INPUT_PATH + input_file_name + ".xlsx", ARCHIVE_FOLDER_PATH + new_file_name)
 
@@ -146,9 +147,9 @@ def choose_files(type, version):
             files_chosen.append(character)
 
     if type == "1":
-        type_choice = "archive"
+        type_choice = "archive file"
     else:
-        type_choice = "copy"
+        type_choice = "copy data"
 
     action = ""
     while action.lower() != "yes" and action.lower() != "no":
@@ -161,7 +162,7 @@ def choose_files(type, version):
         choose_files(type, version)
 
 def main():
-    type = input("Do you want to archive file or copy data. Type 1 for archive, 2 for copy: ")
+    type = input("Do you want to archive file or copy data. Type 1 for archive, 2 for copy data: ")
     version = input("Specify version number: ")
 
     if type == "1":
