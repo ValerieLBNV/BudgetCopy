@@ -89,6 +89,7 @@ def copy_data(version, chosen_files):
         #   No need to check for anything else, just let the code run.
 
         if overwrite.lower() == "no":
+            print("Skipping")
             continue
         elif overwrite.lower() == "yes":
         # Paste cell range
@@ -103,6 +104,7 @@ def copy_data(version, chosen_files):
                                               chosen_cell.column + cell_counter).value = cell.value
                     cell_counter += 1
                 row_counter += 1
+            print("Data copied")
     output_workbook.save(OUTPUT_PATH)
 
 # TODO: delete previous data of measure YTG (or find how in DAX)
@@ -114,7 +116,7 @@ def archive_action(input_file_name, version, new_file_name):
 
     consolidated_sheet['A1'].value = int(version)
     archive_file.save(archive_file_path)
-    print("Archived " + new_file_name)
+    print("Archived")
 
 def archive(version, chosen_files):
     for entity_number in chosen_files:
