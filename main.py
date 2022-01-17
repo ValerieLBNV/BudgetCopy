@@ -83,10 +83,11 @@ def copy_data(version, chosen_files):
         # find location to paste to
         chosen_cell, overwrite = find_starting_cell(output_version_cell, output_worksheet, output_version_column, version)
         # when you have returned both values, you need to make a check here. (if you are not yet returning two values, see to-do inside of the method find_starting_cell)
-        # TODO: inside of the check (if statement), check if the returned input is no (no overwriting). If it is that, then you should close the file (you need to close it, otherwise it will lag ur pc)
+        # inside of the check (if statement), check if the returned input is no (no overwriting). If it is that, then you should close the file (you need to close it, otherwise it will lag ur pc)
         #   and execute (write to the code) - continue
         #   Continue will make the code skip the entire loop - which means that the entire file will be ignored and we will move to another one.
         #   No need to check for anything else, just let the code run.
+
 
         if overwrite.lower() == "no":
             print("Skipping")
