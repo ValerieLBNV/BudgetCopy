@@ -60,22 +60,20 @@ def copy_data(version, chosen_files):
     # for loop should loop over the numbers that you chose, based on those numbers - take the value from list "keys" and also list "values" (get data from both of them from the same position -1)
     # from keys you will get the name of the file to read from and from values you will get the names of the sheets to paste to
     # change these values in the code below to these newly gotten values -> nice and dynamic.
+    output_workbook = xl.load_workbook(OUTPUT_PATH)
 
     for entity_number in chosen_files:
         # loading from input excel
         input_file_name = keys[int(entity_number) - 1] + ".xlsx"
         input_workbook = xl.load_workbook(INPUT_PATH + input_file_name, data_only=True)
         input_worksheet = input_workbook[SHEET_NAME]
-
         input_version_cell = get_version_cell(input_worksheet)
         input_version_cell_below = input_worksheet.cell(input_version_cell.row + 1,
                                                         input_version_cell.column)  # eliminate header row
-
         max_cell = input_worksheet.cell(input_worksheet.max_row, input_worksheet.max_column)
         cell_range = input_worksheet[input_version_cell_below.coordinate:max_cell.coordinate]
 
         # find version cell in output to get the version column
-        output_workbook = xl.load_workbook(OUTPUT_PATH)
         output_sheet_name = values[int(entity_number) - 1]
         output_worksheet = output_workbook[output_sheet_name]
         output_version_cell = get_version_cell(output_worksheet)
@@ -90,7 +88,6 @@ def copy_data(version, chosen_files):
         #   No need to check for anything else, just let the code run.
 
         if overwrite.lower() == "no":
-            output_workbook.save(OUTPUT_PATH)
             continue
         elif overwrite.lower() == "yes":
         # Paste cell range
@@ -105,7 +102,7 @@ def copy_data(version, chosen_files):
                                               chosen_cell.column + cell_counter).value = cell.value
                     cell_counter += 1
                 row_counter += 1
-        output_workbook.save(OUTPUT_PATH)
+    output_workbook.save(OUTPUT_PATH)
 
 # TODO: delete previous data of measure YTG (or find how in DAX)
 def archive_action(input_file_name, version, new_file_name):
