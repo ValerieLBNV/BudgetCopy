@@ -38,7 +38,7 @@ def find_starting_cell(output_version_cell, output_worksheet, output_version_col
         if chosen_cell.value == int(version):
             overwrite = ""
             while overwrite.lower() != "yes" and overwrite.lower() != "no":
-                input("Version " + version + " in " + str(output_worksheet) + " already exists. Overwrite? Yes/no: ")
+                overwrite = input("Version " + version + " in " + str(output_worksheet) + " already exists. Overwrite? Yes/no: ")
             # here, you have found a cell that matches your version. That means that overwriting will happen.
             #  We will need to add another value to return. Just write return x, y
             #  REMEMBER - you will also need to save both of the values too (where you are calling the method from).
@@ -60,7 +60,7 @@ def copy_data(version, chosen_files):
     # for loop should loop over the numbers that you chose, based on those numbers - take the value from list "keys" and also list "values" (get data from both of them from the same position -1)
     # from keys you will get the name of the file to read from and from values you will get the names of the sheets to paste to
     # change these values in the code below to these newly gotten values -> nice and dynamic.
-
+    output_workbook = xl.load_workbook(OUTPUT_PATH)
     for entity_number in chosen_files:
         # loading from input excel
         input_file_name = keys[int(entity_number) - 1] + ".xlsx"
@@ -75,7 +75,6 @@ def copy_data(version, chosen_files):
         cell_range = input_worksheet[input_version_cell_below.coordinate:max_cell.coordinate]
 
         # find version cell in output to get the version column
-        output_workbook = xl.load_workbook(OUTPUT_PATH)
         output_sheet_name = values[int(entity_number) - 1]
         output_worksheet = output_workbook[output_sheet_name]
         output_version_cell = get_version_cell(output_worksheet)
@@ -90,7 +89,6 @@ def copy_data(version, chosen_files):
         #   No need to check for anything else, just let the code run.
 
         if overwrite.lower() == "no":
-            output_workbook.save(OUTPUT_PATH)
             continue
         elif overwrite.lower() == "yes":
         # Paste cell range
@@ -105,7 +103,7 @@ def copy_data(version, chosen_files):
                                               chosen_cell.column + cell_counter).value = cell.value
                     cell_counter += 1
                 row_counter += 1
-        output_workbook.save(OUTPUT_PATH)
+    output_workbook.save(OUTPUT_PATH)
 
 # TODO: delete previous data of measure YTG (or find how in DAX)
 def archive_action(input_file_name, version, new_file_name):
@@ -140,7 +138,7 @@ def choose_files(type, version):
     for entity in dictionary:
         print("\t" + entity + ": " + str(a))
         a += 1
-    choice = input("Which file do you want to work with: ")
+    choice = input("Which file(s) do you want to work with: ")
     files_chosen = []
     for character in choice:
         if character.isdigit():
@@ -175,9 +173,6 @@ def main():
 
     else:
         main()
-
-
-# TODO: you already have an archive / output copy of this, do you want to overwrite again?
 
 # main method
 if __name__ == '__main__':
