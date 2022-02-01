@@ -1,13 +1,15 @@
 import openpyxl as xl
 import shutil
-from openpyxl import Workbook
+import pandas
+import pandas as pd
+from openpyxl import Workbook, load_workbook
 import os
 from pathlib3x import Path
+
 
 INPUT_PATH = "C:\\Users\\vval\\Timex Group\\Sangion, Martina - IKA\\Budget\\2022\\Budget Tracker\\Flash files per entity\\"
 OUTPUT_PATH = "C:\\Users\\vval\\Timex Group\\Sangion, Martina - IKA\\Budget\\2022\\Budget Tracker\\Others\\Datasource Budget-Revenue tracker 2022.xlsx"
 ARCHIVE_FOLDER_PATH = "C:\\Users\\vval\\Timex Group\\Sangion, Martina - IKA\\Budget\\2022\\Budget Tracker\\Flash files per entity\\Archive monthly versions\\"
-# ARCHIVE_FILE_NAME = os.path.basename(os.path.splitext(INPUT_PATH)[0])
 SHEET_NAME = 'All'
 
 dictionary = {"100AMS_IntlKA_Weekly Flash Update": '100 AMS',
@@ -19,6 +21,7 @@ dictionary = {"100AMS_IntlKA_Weekly Flash Update": '100 AMS',
 keys = list(dictionary.keys())
 values = list(dictionary.values())
 
+
 def get_version_cell(sheet):
     for row in sheet:
         for cell in row:
@@ -27,73 +30,52 @@ def get_version_cell(sheet):
                 return cell
     raise ValueError('There is no specified cell')
 
+
 def find_starting_cell(output_version_cell, output_worksheet, output_version_column, version):
     chosen_cell = ''
-
     for number in range(output_version_cell.row + 1,
                         output_worksheet.max_row + 1):  # row+1: excl.header, max+1 incl last max row
         chosen_cell = output_worksheet.cell(number, output_version_column)
         # case 1 where we found a cell with the same version
-
         if chosen_cell.value == int(version):
             overwrite = ""
             while overwrite.lower() != "yes" and overwrite.lower() != "no":
-                overwrite = input("Version " + version + " in " + str(output_worksheet) + " already exists. Overwrite? Yes/no: ")
-            # here, you have found a cell that matches your version. That means that overwriting will happen.
-            #  We will need to add another value to return. Just write return x, y
-            #  REMEMBER - you will also need to save both of the values too (where you are calling the method from).
-            #  You can save them by saying x, y = method()
-            #  You can easily find where the method is called from by clicking wheel on your mouse and hovering over the name of the methdod
-
-            # Now to put that variable to good use:
-            #  Print out a question where you ask if you want to overwrite. Whatever the answer, return the value (together with the value that is being returned currently, do as described above)
-            #  It might be useful to check if the user input makes sense (if its either yes or no). Use while loop as we did before
-
-            return chosen_cell, overwrite
+                overwrite = input(
+                    "Version " + version + " in " + str(output_worksheet) + " already exists. Overwrite? Yes/no: ")
+            return chosen_cell, overwrite  # return location chosen cell and overwrite "yes"
     # case 2 where we did not find a cell with the same version, and we return the last cell in the column
-    overwrite ="yes"
-    return output_worksheet.cell(chosen_cell.row + 1, chosen_cell.column), overwrite
+    overwrite = "yes"
+    return output_worksheet.cell(chosen_cell.row + 1,
+                                 chosen_cell.column), overwrite  # return location chosen cell and overwrite "no"
 
 
 def copy_data(version, chosen_files):
-    # put entire code below into a for loop (VERY similar to archive method)
-    # for loop should loop over the numbers that you chose, based on those numbers - take the value from list "keys" and also list "values" (get data from both of them from the same position -1)
-    # from keys you will get the name of the file to read from and from values you will get the names of the sheets to paste to
-    # change these values in the code below to these newly gotten values -> nice and dynamic.
     output_workbook = xl.load_workbook(OUTPUT_PATH)
+    # loop every entity number chosen through
     for entity_number in chosen_files:
         # loading from input excel
         input_file_name = keys[int(entity_number) - 1] + ".xlsx"
         input_workbook = xl.load_workbook(INPUT_PATH + input_file_name, data_only=True)
         input_worksheet = input_workbook[SHEET_NAME]
-
         input_version_cell = get_version_cell(input_worksheet)
         input_version_cell_below = input_worksheet.cell(input_version_cell.row + 1,
                                                         input_version_cell.column)  # eliminate header row
-
         max_cell = input_worksheet.cell(input_worksheet.max_row, input_worksheet.max_column)
         cell_range = input_worksheet[input_version_cell_below.coordinate:max_cell.coordinate]
-
         # find version cell in output to get the version column
         output_sheet_name = values[int(entity_number) - 1]
         output_worksheet = output_workbook[output_sheet_name]
         output_version_cell = get_version_cell(output_worksheet)
         output_version_column = output_version_cell.column
-
-        # find location to paste to
-        chosen_cell, overwrite = find_starting_cell(output_version_cell, output_worksheet, output_version_column, version)
-        # when you have returned both values, you need to make a check here. (if you are not yet returning two values, see to-do inside of the method find_starting_cell)
-        # inside of the check (if statement), check if the returned input is no (no overwriting). If it is that, then you should close the file (you need to close it, otherwise it will lag ur pc)
-        #   and execute (write to the code) - continue
-        #   Continue will make the code skip the entire loop - which means that the entire file will be ignored and we will move to another one.
-        #   No need to check for anything else, just let the code run.
-
-
+        # return values from def find_starting_cell
+        chosen_cell, overwrite = find_starting_cell(output_version_cell, output_worksheet, output_version_column,
+                                                    version)
+        # perform copy paste data range
         if overwrite.lower() == "no":
             print("Skipping")
             continue
         elif overwrite.lower() == "yes":
-        # Paste cell range
+            # Paste cell range
             row_counter = 0
             for row in cell_range:
                 cell_counter = 0
@@ -108,16 +90,34 @@ def copy_data(version, chosen_files):
             print("Data copied")
     output_workbook.save(OUTPUT_PATH)
 
+
 # TODO: delete previous data of measure YTG (or find how in DAX)
 def archive_action(input_file_name, version, new_file_name):
+    # TODO: specify input file exclude sheet Overview
+    #input_workbook = xl.load_workbook(INPUT_PATH + input_file_name + ".xlsx")
+    #input_worksheet = input_workbook[SHEET_NAME]
+
+    #output_workbook = Workbook()
+    #output_worksheet = output_workbook.active
+    #output_worksheet = SHEET_NAME
+    #output_workbook.save(filename=ARCHIVE_FOLDER_PATH+new_file_name)
+    #output_worksheet = output_workbook.create_sheet(SHEET_NAME)
+    #for row in input_worksheet:
+     #   for cell in row:
+    #        output_worksheet[cell.coordinate].value = cell.value
+
     archive_file_path = shutil.copyfile(INPUT_PATH + input_file_name + ".xlsx", ARCHIVE_FOLDER_PATH + new_file_name)
-
     archive_file = xl.load_workbook(archive_file_path)
+    #PANDAS archive_file = pandas.read_excel(io= archive_file_path, sheet_name=SHEET_NAME)
     consolidated_sheet = archive_file[SHEET_NAME]
-
+    #PANDAS archive_file.at[5:,1] = int(version)
+    #PANDAS print(archive_file.head(10))
     consolidated_sheet['A1'].value = int(version)
+    #output_worksheet['A1'].value = int(version)
     archive_file.save(archive_file_path)
-    print("Archived")
+    #output_workbook.save()
+    print("Archived " + input_file_name)
+
 
 def archive(version, chosen_files):
     for entity_number in chosen_files:
@@ -134,6 +134,7 @@ def archive(version, chosen_files):
                     continue
         else:
             archive_action(input_file_name, version, new_file_name)
+
 
 def choose_files(type, version):
     print("Here are the files we have: ")
@@ -156,11 +157,11 @@ def choose_files(type, version):
     while action.lower() != "yes" and action.lower() != "no":
         print("Run " + type_choice + " version " + version + " for: " + str(files_chosen) + " proceed? yes/no")
         action = input()
-
     if action.lower() == "yes":
         return files_chosen
     else:
         choose_files(type, version)
+
 
 def main():
     type = input("Do you want to archive file or copy data. Type 1 for archive, 2 for copy data: ")
@@ -176,6 +177,7 @@ def main():
 
     else:
         main()
+
 
 # main method
 if __name__ == '__main__':
