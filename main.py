@@ -16,7 +16,8 @@ dictionary = {"100AMS_IntlKA_Weekly Flash Update": '100 AMS',
               "220UK_IntlKA_Weekly Flash Update": '220 UK',
               "570 980 Vert_IntlKA_Weekly Flash Update": '570 980 Vert',
               "720TSH_IntlKA_Weekly Flash Update": '720 TSH',
-              "788HK_IntlKA_Weekly Flash Update": '788 HK'}
+              "788HK_IntlKA_Weekly Flash Update": '788 HK',
+              "320GER_IntlKA_Weekly Flash Update": '320 GER'}
 
 keys = list(dictionary.keys())
 values = list(dictionary.values())
@@ -32,6 +33,7 @@ def get_version_cell(sheet):
 
 
 def find_starting_cell(output_version_cell, output_worksheet, output_version_column, version):
+    X = range(output_version_cell.row + 1, output_worksheet.max_row + 1)
     chosen_cell = ''
     for number in range(output_version_cell.row + 1,
                         output_worksheet.max_row + 1):  # row+1: excl.header, max+1 incl last max row
@@ -87,7 +89,7 @@ def copy_data(version, chosen_files):
                                               chosen_cell.column + cell_counter).value = cell.value
                     cell_counter += 1
                 row_counter += 1
-            print("Data copied")
+            print("Data copied from "+ input_file_name)
     output_workbook.save(OUTPUT_PATH)
 
 
